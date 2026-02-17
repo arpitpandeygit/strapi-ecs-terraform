@@ -15,9 +15,11 @@ resource "aws_ecs_task_definition" "strapi" {
     {
       name  = "strapi"
       image = "${aws_ecr_repository.strapi_repo.repository_url}:latest"
+
       portMappings = [{
         containerPort = 1337
       }]
+
       essential = true
     }
   ])
@@ -31,14 +33,9 @@ resource "aws_ecs_service" "strapi" {
   launch_type     = "FARGATE"
 
   network_configuration {
-    subnets = aws_subnet.public[*].id
+    subnets          = aws_subnet.public[*].id
     assign_public_ip = true
+    security_groups  = [aws_security_group.ecs_sg.id]
   }
-}
-
-network_configuration {
-  subnets         = aws_subnet.public[*].id
-  assign_public_ip = true
-  security_groups  = [aws_security_group.ecs_sg.id]
 }
 
