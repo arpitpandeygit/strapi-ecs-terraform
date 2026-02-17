@@ -40,7 +40,10 @@ jobs:
         docker push $REPO_URI:$IMAGE_TAG
         docker push $REPO_URI:latest
 
-    - name: Terraform Apply (update service)
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+
+    - name: Terraform Apply
       run: |
         cd terraform
         terraform init
