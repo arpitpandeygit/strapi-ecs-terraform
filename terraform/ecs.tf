@@ -26,6 +26,8 @@ resource "aws_ecs_task_definition" "strapi" {
 
       environment = [
         { name = "NODE_ENV", value = "production" },
+
+        # REQUIRED for Strapi production
         { name = "APP_KEYS", value = "appKey1,appKey2,appKey3,appKey4" },
         { name = "API_TOKEN_SALT", value = "randomSalt123" },
         { name = "ADMIN_JWT_SECRET", value = "superSecretAdmin" },
@@ -35,7 +37,7 @@ resource "aws_ecs_task_definition" "strapi" {
       logConfiguration = {
         logDriver = "awslogs"
         options = {
-          awslogs-group         = "/ecs/strapi"
+          awslogs-group         = aws_cloudwatch_log_group.ecs.name
           awslogs-region        = "us-east-1"
           awslogs-stream-prefix = "ecs"
         }
@@ -58,5 +60,9 @@ resource "aws_ecs_service" "strapi" {
     assign_public_ip = true
     security_groups  = [aws_security_group.ecs_sg.id]
   }
+
+  depends_on = [
+    aws_cloudwatch_log_group.ecs
+  ]
 }
 
