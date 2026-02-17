@@ -23,12 +23,25 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: ${{ env.AWS_REGION }}
 
+    # ✅ Install Terraform
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+
+    # ✅ Create infra FIRST (ECR, ECS, VPC, IAM)
+    - name: Terraform Apply
+      run: |
+        cd terraform
+        terraform init
+        terraform apply -auto-approve
+
+    # ✅ Now login to ECR (repo exists)
     - name: Login to ECR
       run: |
         aws ecr get-login-password \
         | docker login --username AWS --password-stdin \
         $(aws ecr describe-repositories --repository-names $ECR_REPOSITORY --query 'repositories[0].repositoryUri' --output text)
 
+    # ✅ Build & Push image
     - name: Build & Push Image
       run: |
         REPO_URI=$(aws ecr describe-repositories --repository-names $ECR_REPOSITORY --query 'repositories[0].repositoryUri' --output text)
@@ -39,13 +52,4 @@ jobs:
 
         docker push $REPO_URI:$IMAGE_TAG
         docker push $REPO_URI:latest
-
-    - name: Setup Terraform
-      uses: hashicorp/setup-terraform@v3
-
-    - name: Terraform Apply
-      run: |
-        cd terraform
-        terraform init
-        terraform apply -auto-approve
 
