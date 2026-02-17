@@ -16,9 +16,30 @@ resource "aws_ecs_task_definition" "strapi" {
       name  = "strapi"
       image = "${aws_ecr_repository.strapi_repo.repository_url}:latest"
 
-      portMappings = [{
-        containerPort = 1337
-      }]
+      portMappings = [
+        {
+          containerPort = 1337
+          hostPort      = 1337
+          protocol      = "tcp"
+        }
+      ]
+
+      environment = [
+        { name = "NODE_ENV", value = "production" },
+        { name = "APP_KEYS", value = "appKey1,appKey2,appKey3,appKey4" },
+        { name = "API_TOKEN_SALT", value = "randomSalt123" },
+        { name = "ADMIN_JWT_SECRET", value = "superSecretAdmin" },
+        { name = "JWT_SECRET", value = "superSecretJwt" }
+      ]
+
+      logConfiguration = {
+        logDriver = "awslogs"
+        options = {
+          awslogs-group         = "/ecs/strapi"
+          awslogs-region        = "us-east-1"
+          awslogs-stream-prefix = "ecs"
+        }
+      }
 
       essential = true
     }
